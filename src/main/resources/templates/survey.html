@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+    <script src="https://kit.fontawesome.com/9f0616f8e0.js" crossorigin="anonymous"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        .survey-container {
+            margin-top: 50px;
+        }
+        img {
+            max-width: 300px;
+            max-height: 300px;
+            margin: 15px;
+        }
+        .rating-buttons {
+            margin-top: 50px;
+            display: flex;
+            justify-content: center;
+        }
+
+
+        .success-message {
+            display: none;
+            color: green;
+            margin-top: 20px;
+        }
+
+        .view-all-button {
+            display: none;
+            margin: 20px auto; /* Center-align the button */
+        }
+        .image-list-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end; /* Align ratings to the bottom */
+            gap: 20px; /* Space between images */
+            overflow-x: auto; /* Enable horizontal scrolling */
+            white-space: nowrap; /* Prevent wrapping */
+            margin-top: 20px;
+            padding: 20px 0;
+        }
+
+        .image-list-item {
+            text-align: center;
+            display: inline-block; /* Display images in a line */
+        }
+
+        .image-list-item img {
+            width: 200px; /* Set a fixed width for uniform size */
+            height: auto; /* Automatically adjust height */
+            border: 1px solid #ddd; /* Add a border for separation */
+        }
+
+        .image-list-item p {
+            margin-top: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="survey-container">
+    <h1>How appealing is this Food?</h1>
+    <div id="imageContainer"></div>
+    <div class="rating-buttons">
+        <button onclick="rateFood(1)"><i class="fa-solid fa-1"></i></button>
+        <button onclick="rateFood(2)"><i class="fa-solid fa-2"></i></button>
+        <button onclick="rateFood(3)"><i class="fa-solid fa-3"></i></button>
+        <button onclick="rateFood(4)"><i class="fa-solid fa-4"></i></button>
+        <button onclick="rateFood(5)"><i class="fa-solid fa-5"></i></button>
+        <button onclick="rateFood(6)"><i class="fa-solid fa-6"></i></button>
+        <button onclick="rateFood(7)"><i class="fa-solid fa-7"></i></button>
+        <button onclick="rateFood(8)"><i class="fa-solid fa-8"></i></button>
+        <button onclick="rateFood(9)"><i class="fa-solid fa-9"></i></button>
+        <button onclick="rateFood(10)"><i class="fa-solid fa-1"></i> <i class="fa-solid fa-0"></i></button>
+    </div>
+    <p class="success-message" id="successMessage">Thank you for completing the survey! You may now close this window.</p>
+    <button class="view-all-button" onclick="viewAllPictures()">View All Pictures and Ratings</button>
+</div>
+
+<script>
+    const imageContainer = document.getElementById("imageContainer");
+    const successMessage = document.getElementById("successMessage");
+    const viewAllButton = document.querySelector(".view-all-button");
+    let currentImageIndex = 0;
+    let imageUrls = [];
+
+    async function loadImages() {
+        try {
+            const response = await fetch("/getImagesFromS3"); // Updated endpoint
+            imageUrls = await response.json();
+
+            if (imageUrls.length === 0) {
+                imageContainer.innerHTML = "No images found.";
+            } else {
+                showImage(currentImageIndex);
+            }
+        } catch (error) {
+            console.error("Error loading images:", error);
+            imageContainer.innerHTML = "An error occurred while loading images.";
+        }
+    }
+
+    async function rateFood(rating) {
+        const imageUrl = imageUrls[currentImageIndex];
+        const requestBody = {
+            imageUrl: imageUrl,
+            rating: rating
+        };
+
+        try {
+            const response = await fetch("/saveRating", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (response.ok) {
+                console.log(`Rating ${rating} saved for image ${imageUrl}`);
+            } else {
+                console.error("Error saving rating:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error saving rating:", error);
+        }
+
+        currentImageIndex++;
+        showImage(currentImageIndex);
+    }
+
+    function showImage(index) {
+        const h1Element = document.querySelector("h1");
+        if (index < imageUrls.length) {
+            h1Element.style.display = "block"; // Show the <h1>
+
+            const img = document.createElement("img");
+            img.src = `images/${imageUrls[index]}`; // Adjust path as needed
+            img.alt = imageUrls[index];
+            imageContainer.innerHTML = "";
+            imageContainer.appendChild(img);
+            showRatingButtons(); // Show rating buttons
+        } else {
+            h1Element.style.display = "none"; // Hide the <h1>
+
+            hideRatingButtons(); // Hide rating buttons
+            imageContainer.innerHTML = ""; // Clear the current image
+
+            // Show the success message and "View All Pictures" button
+            successMessage.style.display = "block";
+            viewAllButton.style.display = "block";
+        }
+    }
+
+
+    function showRatingButtons() {
+        const ratingButtons = document.querySelector(".rating-buttons");
+        ratingButtons.style.display = "flex"; // Show rating buttons
+    }
+
+    function hideRatingButtons() {
+        const ratingButtons = document.querySelector(".rating-buttons");
+        ratingButtons.style.display = "none"; // Hide rating buttons
+    }
+
+
+
+    async function viewAllPictures() {
+        try {
+            const response = await fetch("/getAllRatings");
+            const allRatings = await response.json();
+
+            // Clear previous content
+            imageContainer.innerHTML = "";
+
+            // Display all images and ratings horizontally
+            const imageListContainer = document.createElement("div");
+            imageListContainer.classList.add("image-list-container");
+
+            for (const imageUrl in allRatings) {
+                const img = document.createElement("img");
+                img.src = `images/${imageUrl}`;
+                img.alt = imageUrl;
+
+                const ratingsList = allRatings[imageUrl];
+                const ratingsInfo = document.createElement("p");
+                ratingsInfo.textContent = `Ratings: ${ratingsList.join(", ")}`;
+
+                const imageListItem = document.createElement("div");
+                imageListItem.classList.add("image-list-item");
+                imageListItem.appendChild(img);
+                imageListItem.appendChild(ratingsInfo);
+
+                imageListContainer.appendChild(imageListItem);
+            }
+
+            imageContainer.appendChild(imageListContainer);
+
+            // Hide other elements
+            const h1Element = document.querySelector("h1");
+            h1Element.style.display = "none"; // Hide the <h1>
+
+            const ratingButtons = document.querySelector(".rating-buttons");
+            ratingButtons.style.display = "none"; // Hide rating buttons
+
+            // Hide the "View All Pictures" button
+            viewAllButton.style.display = "none";
+
+            // Show the success message
+            successMessage.style.display = "block";
+        } catch (error) {
+            console.error("Error loading all pictures and ratings:", error);
+        }
+    }
+
+
+
+
+    loadImages();
+</script>
+</body>
+</html>
