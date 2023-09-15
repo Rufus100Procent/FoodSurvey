@@ -41,7 +41,7 @@ getting all ImagesFromS3Bucket, saveRatings invokeLambda.
 - The backend retrieves images from an AWS S3 bucket.
 - Users rate the images 1-10.
 - If an image receives a rating of 1, 2, or 3, a Lambda function is invoked.
-- The Lambda function sends an SNS notification.
+- SNS notification will be sent out.
 
 # AWS Services Used During Development
 - AWS CodeCommit
