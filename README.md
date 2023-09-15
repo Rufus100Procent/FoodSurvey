@@ -24,12 +24,16 @@ from an AWS S3 bucket to users. Users rate these images on a scale of 1 to 10, c
 overall user experience.
 - - -
 
-IMAGE
+![Screenshot from 2023-09-13 12-57-03](https://github.com/Rufus100Procent/FoodSurvey/assets/66412126/c000e7e6-9535-481e-b834-280b4075df66)
+
 
 **X-Ray Tracing**
 
 X-Ray tracing is enabled for the entire controller and specific methods in the Service class such ass
 getting all ImagesFromS3Bucket, saveRatings invokeLambda.
+
+![Screenshot from 2023-09-04 17-03-56](https://github.com/Rufus100Procent/FoodSurvey/assets/66412126/ef6d2c0f-bab9-41e9-82f9-7cbfada6192c)
+
 
 # Application Workflow
 
@@ -106,9 +110,5 @@ getting all ImagesFromS3Bucket, saveRatings invokeLambda.
 - AWSXRayDaemonWriteAccess
 - AWSCodeDeployFullAccess
 # Diagram/Design
-![FoodSurvey.drawio4.drawio.png](FoodSurvey.drawio4.drawio.png)
-	
 
-
-
-# FoodSurvey
+![FoodSurvey drawio4 drawio](https://github.com/Rufus100Procent/FoodSurvey/assets/66412126/1843a505-4e5d-4888-bcfd-46c8d2ec844b)
